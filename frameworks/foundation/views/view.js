@@ -1179,11 +1179,7 @@ SC.View = SC.Responder.extend(SC.DelegateSupport,
     if (this.didCreateLayer) this.didCreateLayer() ;
 
     // Animation prep
-    if (SC.platform.supportsCSSTransitions) {
-      this.resetAnimation();
-      SC.Event.add(this.get('layer'), SC.platform.cssPrefix+"TransitionEnd", this, this._scv_animationEnd);
-      SC.Event.add(this.get('layer'), "transitionEnd", this, this._scv_animationEnd);
-    }
+    if (SC.platform.supportsCSSTransitions) this.resetAnimation();
 
     // and notify others
     var mixins = this.didCreateLayerMixin, len, idx,
@@ -1231,12 +1227,6 @@ SC.View = SC.Responder.extend(SC.DelegateSupport,
   destroyLayer: function() {
     var layer = this.get('layer') ;
     if (layer) {
-
-      // Teardown animations
-      if (SC.platform.supportsCSSTransitions) {
-        SC.Event.remove(this.get('layer'), SC.platform.cssPrefix+"TransitionEnd", this, this._scv_animationEnd);
-        SC.Event.remove(this.get('layer'), "transitionEnd", this, this._scv_animationEnd);
-      }
 
       // Now notify the view and its child views.  It will also set the
       // layer property to null.
@@ -2465,7 +2455,7 @@ SC.View = SC.Responder.extend(SC.DelegateSupport,
   /**
     Called when animation ends, should not usually be called manually
   */
-  _scv_animationEnd: function(evt){
+  transitionDidEnd: function(evt){
     // WARNING: Sometimes this will get called more than once for a property. Not sure why.
 
     var propertyName = evt.originalEvent.propertyName,
@@ -3380,11 +3370,16 @@ SC.View = SC.Responder.extend(SC.DelegateSupport,
           layer = this.get('layer'),
           // FIXME: This is not the best way to do it, we should track these locally
           currentTransforms = (layer ? layer.style[transformAttribute] : '').split(' '),
-          halTransforms, specialTransforms = [], transformName, idx;
+          cleanedTransforms = [], halTransforms, specialTransforms = [], transformName, idx;
 
       if (canUseAcceleratedLayer) {
-        // Remove previous transforms
-        if (this._lastAcceleratedTransforms) currentTransforms.removeObjects(this._lastAcceleratedTransforms);
+        // Remove old translates
+        for(idx=0; idx < currentTransforms.length; idx++) {
+          if (currentTransforms[idx].substring(0,9) !== 'translate') {
+            cleanedTransforms.push(currentTransforms[idx]);
+          }
+        }
+        currentTransforms = cleanedTransforms;
 
         halTransforms = ['translateX('+(translateLeft || 0)+'px)', 'translateY('+(translateTop || 0)+'px)'];
 
@@ -3392,14 +3387,11 @@ SC.View = SC.Responder.extend(SC.DelegateSupport,
         if (SC.platform.supportsCSS3DTransforms && !currentTransforms.join(' ').match('translateZ')) {
           halTransforms.push('translateZ(0px)');
         }
-
-        // Store for next time
-        this._lastAcceleratedTransforms = halTransforms;
       }
 
       // Handle special CSS transform attributes
       for(transformName in SC.CSS_TRANSFORM_MAP) {
-        var cleanedTransforms = [];
+        cleanedTransforms = [];
         for(idx=0; idx < currentTransforms.length; idx++) {
           if (!currentTransforms[idx].match(new RegExp('^'+transformName+'\\\('))) {
             cleanedTransforms.push(currentTransforms[idx]);

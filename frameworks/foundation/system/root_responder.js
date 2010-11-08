@@ -56,6 +56,10 @@ SC.RootResponder = SC.Object.extend({
   init: function() {
     sc_super();
     this.panes = SC.Set.create();
+
+    if (SC.platform.supportsCSSTransitions) {
+      this[SC.platform.cssPrefix+'TransitionEnd'] = this.transitionEnd;
+    }
   },
 
   // .......................................................
@@ -615,13 +619,18 @@ SC.RootResponder = SC.Object.extend({
     // handle basic events
     this.listenFor('keydown keyup beforedeactivate mousedown mouseup click dblclick mouseout mouseover mousemove selectstart contextmenu'.w(), document)
         .listenFor('resize'.w(), window);
-        
+
     if(SC.browser.msie) this.listenFor('focusin focusout'.w(), document);
     else this.listenFor('focus blur'.w(), window);
 
     // handle animation events
     this.listenFor('webkitAnimationStart webkitAnimationIteration webkitAnimationEnd'.w(), document);
-    
+
+    // CSS Transitions
+    if (SC.platform.supportsCSSTransitions) {
+      this.listenFor(['transitionEnd', SC.platform.cssPrefix+'TransitionEnd'], document);
+    }
+
     // handle special case for keypress- you can't use normal listener to block the backspace key on Mozilla
     if (this.keypress) {
       if (SC.CAPTURE_BACKSPACE_KEY && SC.browser.mozilla) {
@@ -1931,6 +1940,18 @@ SC.RootResponder = SC.Object.extend({
     }
 
     return view ? evt.hasCustomEventHandling : YES;
+  },
+
+  transitionEnd: function(evt){
+    try {
+      var view = this.targetViewForEvent(evt) ;
+      this.sendEvent('transitionDidEnd', evt, view) ;
+    } catch (e) {
+      console.warn('Exception during transitionDidEnd: %@'.fmt(e)) ;
+      throw e;
+    }
+
+    return view ? evt.hasCustomEventHandling : YES;
   }
 
 });
@@ -1990,7 +2011,7 @@ SC.Touch.prototype = {
     the hasCustomEventHandling property to YES but does not cancel the event.
   */
   allowDefault: function() {
-    this.event.hasCustomEventHandling = YES ;
+    if (this.event) this.event.hasCustomEventHandling = YES ;
   },
 
   /**
