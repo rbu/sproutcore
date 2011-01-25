@@ -1016,7 +1016,6 @@ SC.CollectionView = SC.View.extend(
   },
     
 
-  _TMP_ATTRS: {},
   _COLLECTION_CLASS_NAMES: 'sc-collection-item'.w(),
   _GROUP_COLLECTION_CLASS_NAMES: 'sc-collection-item sc-group-item'.w(),
   _VIEW_POOL: null,
@@ -1149,7 +1148,7 @@ SC.CollectionView = SC.View.extend(
     // If we weren't able to re-use a view, then create a new one.
     if (!ret) {
       // collect some other state
-      var attrs = this._TMP_ATTRS;
+      var attrs = this._TMP_ATTRS || (this._TMP_ATTRS = {});
       attrs.contentIndex      = idx;
       attrs.content           = item;
       attrs.owner             = attrs.displayDelegate = this;
