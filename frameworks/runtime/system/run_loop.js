@@ -82,18 +82,20 @@ SC.RunLoop = SC.Object.extend(/** @scope SC.RunLoop.prototype */ {
     // step through all of them again.  This way any changes get flushed
     // out completely.
     var didChange ;
+    var shouldLog = SC.LOG_BINDINGS || SC.LOG_OBSERVERS;
 
-    if (SC.LOG_BINDINGS || SC.LOG_OBSERVERS) {
+    if (shouldLog) {
       console.log("-- SC.RunLoop.endRunLoop ~ flushing application queues");
     } 
     
     do {
+      if (shouldLog) SC.KVOLogging.startNewPumpRound();
       didChange = this.flushApplicationQueues() ;
       if (!didChange) didChange = this._flushinvokeLastQueue() ; 
     } while(didChange) ;
     this._start = null ;
 
-    if (SC.LOG_BINDINGS || SC.LOG_OBSERVERS) {
+    if (shouldLog) {
       console.log("-- SC.RunLoop.endRunLoop ~ End");
     } 
     
