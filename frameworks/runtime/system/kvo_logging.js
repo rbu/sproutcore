@@ -247,17 +247,20 @@ SC.KVOLogging = SC.Object.create({
             return 'null';
         
         var klassName = SC._object_className(object.constructor);
-        if ('_computeBindingTargets' in object)
-            klassName = 'SC.Binding'; // stupid SC.Binding
+        if ('Anonymous' === klassName) {
+            if ('_computeBindingTargets' in object)
+                klassName = 'SC.Binding'; // stupid SC.Binding
+            else if ('isChainObserver' in object)
+                klassName = 'SC._ChainObserver';
+            else if ('isSet' in object)
+                klassName = 'SC.Set';
+            else if (jQuery.isArray(object))
+                klassName = 'SC.Array';
+            else
+                console.log('found Anonymous object:', object);
+        }
         
         return "%@:%@".fmt(klassName, SC.guidFor(object));
     }
 
-});
-
-SC.KVOLogging.KVOEvent = SC.Object.extend({
-    source: null,
-    sourceKey: null,
-    taerget: null,
-    targetKey: null
 });
