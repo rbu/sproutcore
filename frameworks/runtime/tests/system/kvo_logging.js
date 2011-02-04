@@ -242,7 +242,6 @@ test("can log observers on two different objects", function() {
 
 
 
-test("restarts testsuite", function() {
-    // comment out if you don't want a testsuite that runs back to back
-    setTimeout("location.reload()", 3 * 1000);
-});
+// test("restarts testsuite - comment out to prevent testsuite running back to back", function() {
+//     setTimeout("location.reload()", 3 * 1000);
+// });
