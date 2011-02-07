@@ -89,12 +89,12 @@ SC.Array = {
     
     @param {Number} idx
       The index of the item to return.  If idx exceeds the current length, 
-      return null.
+      return undefined.
   */
   objectAt: function(idx) {
     if (idx < 0) return undefined ;
     if (idx >= this.get('length')) return undefined;
-    return this.get(idx);
+    return this.get('' + idx);
   },
   
   /**

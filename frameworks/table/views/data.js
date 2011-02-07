@@ -223,7 +223,7 @@ SC.DataView = SC.ListView.extend({
         ret;
     
     // collect some other state
-    var attrs = this._TMP_ATTRS;
+    var attrs = this._TMP_ATTRS || (this._TMP_ATTRS = {});
     attrs.contentIndex      = idx;
     attrs.content           = item;
     attrs.owner             = attrs.displayDelegate = this;

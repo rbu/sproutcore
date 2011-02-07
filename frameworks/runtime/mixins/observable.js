@@ -423,6 +423,8 @@ SC.Observable = {
     var level = this._kvo_changeLevel || 0,
         cachedep, idx, dfunc, cache, func,
         log = SC.LOG_OBSERVERS && !(this.LOG_OBSERVING===NO);
+    
+    if (log) SC.KVOLogging.didChangeObjectProperty(this, key);
 
     if (cache = this._kvo_cache) {
 
@@ -460,7 +462,7 @@ SC.Observable = {
       changes.add(key) ;
       
       if (suspended) {
-        if (log) console.log("%@%@: will not notify observers because observing is suspended".fmt(SC.KVO_SPACES,this));
+        if (log) SC.KVOLogging.willNotNotifyObserversBecauseObservingIsDisabled(this, key);
         SC.Observers.objectHasPendingChanges(this) ;
       }
       
@@ -910,7 +912,9 @@ SC.Observable = {
   // this private method actually notifies the observers for any keys in the
   // observer queue.  If you pass a key it will be added to the queue.
   _notifyPropertyObservers: function(key) {
-
+    
+    var originalKey = key; // sadly key is assigned to in this method
+    
     if (!this._observableInited) this.initObservable() ;
     
     SC.Observers.flush(this) ; // hookup as many observers as possible.
@@ -920,10 +924,7 @@ SC.Observable = {
         members, membersLength, member, memberLoc, target, method, loc, func,
         context, spaces, cache ;
 
-    if (log) {
-      spaces = SC.KVO_SPACES = (SC.KVO_SPACES || '') + '  ';
-      console.log('%@%@: notifying observers after change to key "%@"'.fmt(spaces, this, key));
-    }
+    if (log) SC.KVOLogging.willNotifyObserversForKey(this, key);
     
     // Get any starObservers -- they will be notified of all changes.
     starObservers =  this['_kvo_observers_*'] ;
@@ -963,9 +964,7 @@ SC.Observable = {
           // for each dependent key, add to set of changes.  Also, if key
           // value is a cacheable property, clear the cached value...
           if (keys && (loc = keys.length)) {
-            if (log) {
-              console.log("%@...including dependent keys for %@: %@".fmt(spaces, key, keys));
-            }
+            if (log) SC.KVOLogging.includingDependendKeysForKey(keys, key);
             cache = this._kvo_cache;
             if (!cache) cache = this._kvo_cache = {};
             while(--loc >= 0) {
@@ -997,12 +996,13 @@ SC.Observable = {
             context = member[2];
             member[3] = rev;
             
-            if (log) console.log('%@...firing observer on %@ for key "%@"'.fmt(spaces, target, key));
+            if (log) SC.KVOLogging.willFireObserverOnObjectForKey(target, key);
             if (context !== undefined) {
               method.call(target, this, key, null, context, rev);
             } else {
               method.call(target, this, key, null, rev) ;
             }
+            if (log) SC.KVOLogging.didFireObserverOnObjectForKey(target, key);
           }
         }
 
@@ -1016,8 +1016,9 @@ SC.Observable = {
             member = members[memberLoc];
             method = this[member] ; // try to find observer function
             if (method) {
-              if (log) console.log('%@...firing local observer %@.%@ for key "%@"'.fmt(spaces, this, member, key));
+              if (log) SC.KVOLogging.willFireLocalObserverForKey(this, member, key);
               method.call(this, this, key, null, rev);
+              if (log) SC.KVOLogging.didFireLocalObserverForKey(this, member, key);
             }
           }
         }
@@ -1032,7 +1033,7 @@ SC.Observable = {
             method = member[1] ;
             context = member[2] ;
             
-            if (log) console.log('%@...firing * observer on %@ for key "%@"'.fmt(spaces, target, key));
+            if (log) SC.KVOLogging.firingStarObserverOnObjectForKey(target, key);
             if (context !== undefined) {
               method.call(target, this, key, null, context, rev);
             } else {
@@ -1043,7 +1044,7 @@ SC.Observable = {
 
         // if there is a default property observer, call that also
         if (this.propertyObserver) {
-          if (log) console.log('%@...firing %@.propertyObserver for key "%@"'.fmt(spaces, this, key));
+          if (log) SC.KVOLogging.willFireDefaultPropertyObserverOnObjectForKey(this, key);
           this.propertyObserver(this, key, null, rev);
         }
       } // while(changes.length>0)
@@ -1059,7 +1060,7 @@ SC.Observable = {
     // done with loop, reduce change level so that future sets can resume
     this._kvo_changeLevel = (this._kvo_changeLevel || 1) - 1; 
     
-    if (log) SC.KVO_SPACES = spaces.slice(0, -2);
+    if (log) SC.KVOLogging.didNotifyObserversForKey(this, originalKey);
     
     return YES ; // finished successfully
   },
