@@ -229,7 +229,7 @@ SC.TableView = SC.View.extend({
         }),
 
 
-        autohidesVerticalScrollerBinding: SC.Binding.from('autohidesVerticalScroller', this),
+        autohidesVerticalScroller: NO,
         horizontalScrollOffsetBinding: SC.Binding.from('.horizontalScrollOffset',this)
       }));
     }
