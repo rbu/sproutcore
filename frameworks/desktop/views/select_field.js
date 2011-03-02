@@ -137,6 +137,7 @@ SC.SelectFieldView = SC.FieldView.extend(
         // var html = [] ;       
         if(!firstTime){
           selectElement=this.$input()[0];
+          if (!selectElement) return;
           selectElement.innerHTML='';
         } 
       
@@ -207,6 +208,8 @@ SC.SelectFieldView = SC.FieldView.extend(
       } else {
         this.set('value',null);
       }
+    } else {
+      this.$().attr('disabled', this.get('isEnabled') ? null : 'disabled');
     }
   },
   

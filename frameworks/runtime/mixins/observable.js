@@ -1155,7 +1155,11 @@ SC.Observable = {
     Sets the property only if the passed value is different from the
     current value.  Depending on how expensive a get() is on this property,
     this may be more efficient.
-    
+
+    NOTE: By default, the set() method will not set the value unless it has
+    changed. However, this check can skipped by setting .property().idempotent(NO)
+    setIfChanged() may be useful in this case.
+
     @param key {String} the key to change
     @param value {Object} the value to change
     @returns {SC.Observable}
@@ -1330,7 +1334,7 @@ SC.Observable = {
 
 /** @private used by addProbe/removeProbe */
 SC.logChange = function logChange(target, key, value) {
-  console.log("CHANGE: %@[%@] =>".fmt(target, key), target.get(key));
+  console.log("CHANGE: %@[%@] => %@".fmt(target, key, target.get(key)));
 };
 
 /**
