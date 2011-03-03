@@ -49,8 +49,25 @@ SC.DataView = SC.ListView.extend({
     this.reload();
   }.observes('columnViews'),
   
-  
-  
+
+
+    //if the table view has a rowDelegate, we use its rowHeightForContentIndex
+    //and customRowHeightIndexes methods, otherwise, fallback to default behavior
+    rowHeightForContentIndex: function(index) {
+        var delegate = this.getPath('parentView.parentView.parentView.rowDelegate');
+        if (delegate)
+            return delegate.rowHeightForContentIndex(index);
+        return sc_super();
+    },
+    customRowHeightIndexes: function() {
+        var delegate = this.getPath('parentView.parentView.parentView.rowDelegate');
+        if (delegate)
+            return delegate.customRowHeightIndexes();
+        return sc_super();
+    }.property(),
+
+
+
   /**
      Returns the appropriate value from the content based on row and column number
 
