@@ -408,8 +408,11 @@ SC.TableView = SC.View.extend({
       sortState = "DESC";
     }
     this.set('sortDescriptor', sortState + " " + column.get('key'));
+    this.invokeLater(function() {
+        this.getPath('_dataView.contentView').rowHeightDidChangeForIndexes(0);
+    })
   },
-  
+
   // reordering
   
   /**
