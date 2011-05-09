@@ -862,7 +862,6 @@ SC.Store = SC.Object.extend( /** @scope SC.Store.prototype */ {
   
   
   _findQuery: function(query, createIfNeeded, refreshIfNew) {
-
     // lookup the local RecordArray for this query.
     var cache = this._scst_recordArraysByQuery, 
         key   = SC.guidFor(query),
